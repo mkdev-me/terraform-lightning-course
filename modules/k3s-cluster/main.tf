@@ -22,6 +22,19 @@ resource "packet_device" "test" {
   billing_cycle       = "hourly"
   project_ssh_key_ids = [packet_project_ssh_key.mkdev.id]
   project_id          = var.project_id
+
+  provisioner "remote-exec" {
+    script = "${path.module}/scripts/bootstrap.sh"
+
+    connection {
+      user = "root"
+      host = "${self.access_public_ipv4}"
+    }
+  }
+
+  provisioner "local-exec" {
+    command = "${path.module}/scripts/kubeconfig.sh ${self.access_public_ipv4}"
+  }
 }
 
 resource "aws_route53_record" "dns" {
